@@ -287,13 +287,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25555",
             "ToPort": "25555",
-            "CidrIp": "10.0.0.0/16"
+            "CidrIp": {"Ref": "03OpsManagerIngress"}
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "6868",
             "ToPort": "6868",
-            "CidrIp": "10.0.0.0/16"
+            "CidrIp": {"Ref": "03OpsManagerIngress"}
           }
         ]
       }
