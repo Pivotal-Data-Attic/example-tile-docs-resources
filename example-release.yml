@@ -1,0 +1,73 @@
+---
+name: example-product-906ec4aecbec172c9706
+director_uuid: 729452b0-2c1f-4763-a6ec-cf43e7f0ba89
+releases:
+- name: example-release
+  version: '7+dev.2'
+networks:
+- name: default
+  subnets:
+  - range: 10.0.16.0/20
+    gateway: 10.0.16.1
+    dns:
+    - 10.0.0.2
+    static:
+    - 10.0.16.5
+    reserved:
+    - 10.0.16.2-10.0.16.4
+    cloud_properties:
+      subnet: subnet-3996105c  # <----- Replace this with your /20 subnet
+resource_pools:
+- name: vms
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: '3026'
+  network: default
+  cloud_properties:
+    instance_type: t2.micro
+    availability_zone: us-west-1a # <----- replace this with your availability zone
+    ephemeral_disk:
+      size: 2048
+      type: gp2
+compilation:
+  reuse_compilation_vms: true
+  workers: 1
+  network: default
+  cloud_properties:
+    instance_type: t2.micro
+    availability_zone: us-west-1a  # <----- Replace this with your availability zone
+    ephemeral_disk:
+      size: 2048
+      type: gp2
+update:
+  canaries: 1
+  canary_watch_time: 30000-300000
+  update_watch_time: 30000-300000
+  max_in_flight: 1
+  max_errors: 2
+  serial: true
+jobs:
+- name: web_server
+  templates:
+  - name: web_server
+    release: example-release
+  - name: time_logger
+    release: example-release
+  lifecycle: service
+  instances: 1
+  resource_pool: vms
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+    static_ips:
+    - 10.0.16.5
+  properties:
+    max_in_flight: 1
+  persistent_disk_pool: disk
+disk_pools:
+- name: disk
+  disk_size: 1024
+  cloud_properties:
+    type: gp2
