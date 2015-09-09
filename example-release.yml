@@ -1,6 +1,6 @@
 ---
 name: example-product-906ec4aecbec172c9706
-director_uuid: 729452b0-2c1f-4763-a6ec-cf43e7f0ba89
+director_uuid: 729452b0-2c1f-4763-a6ec-cf43e7f0ba89 # <----- Replace this with your MicroBOSH UUID
 releases:
 - name: example-release
   version: '7+dev.2'
