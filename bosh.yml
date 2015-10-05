@@ -29,9 +29,9 @@ networks:
 - name: private
   type: manual
   subnets:
-  - range: 10.0.0.0/24
-    gateway: 10.0.0.1
-    dns: [10.0.0.2]
+  - range: 192.168.1.0/24
+    gateway: 192.168.1.1
+    dns: [8.8.8.8]
     cloud_properties: {subnet: subnet-3e96105b} # <--- Replace with Subnet ID
 - name: public
   type: vip
@@ -55,7 +55,7 @@ jobs:
 
   networks:
   - name: private
-    static_ips: [10.0.0.6]
+    static_ips: [192.168.1.6]
     default: [dns, gateway]
   - name: public
     static_ips: [52.8.50.119] # <--- Replace with Elastic IP
@@ -79,8 +79,8 @@ jobs:
       adapter: postgres
 
     registry:
-      address: 10.0.0.6
-      host: 10.0.0.6
+      address: 192.168.1.6
+      host: 192.168.1.6
       db: *db
       http: {user: admin, password: admin, port: 25777}
       username: admin
@@ -88,7 +88,7 @@ jobs:
       port: 25777
 
     blobstore:
-      address: 10.0.0.6
+      address: 192.168.1.6
       port: 25250
       provider: dav
       director: {user: director, password: director-password}
@@ -112,7 +112,7 @@ jobs:
       default_security_groups: [examplestack-PcfOpsManagerSecurityGroup-1R3PAC7VM9ZPM]
       region: us-west-1
 
-    agent: {mbus: "nats://nats:nats-password@10.0.0.6:4222"}
+    agent: {mbus: "nats://nats:nats-password@192.168.1.6:4222"}
 
     ntp: &ntp [0.pool.ntp.org, 1.pool.ntp.org]
 
