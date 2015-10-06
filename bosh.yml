@@ -109,7 +109,7 @@ jobs:
       access_key_id: BLAHI6MBLAHV7HSBLAH # <--- Replace with AWS Access Key ID
       secret_access_key: BLAHRGt2ZBLAHzphlMjteGBLAHBLAHrGiCGiD1 # <--- Replace with AWS Secret Key
       default_key_name: MyKeyPair
-      default_security_groups: [examplestack-PcfOpsManagerSecurityGroup-1R3PAC7VM9ZPM]
+      default_security_groups: [secg]
       region: us-west-1
 
     agent: {mbus: "nats://nats:nats-password@192.168.1.6:4222"}
