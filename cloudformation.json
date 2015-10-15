@@ -17,7 +17,20 @@
 
     "Mappings" : {
 
+      "NatRegionMap" : {
+        "us-east-1"      : { "AMI" : "ami-184dc970" },
+        "us-west-1"      : { "AMI" : "ami-a98396ec" },
+        "us-west-2"      : { "AMI" : "ami-290f4119" },
+        "eu-west-1"      : { "AMI" : "ami-14913f63" },
+        "eu-central-1"   : { "AMI" : "ami-ae380eb3" },
+        "sa-east-1"      : { "AMI" : "ami-8122969c" },
+        "ap-southeast-1" : { "AMI" : "ami-6aa38238" },
+        "ap-southeast-2" : { "AMI" : "ami-893f53b3" },
+        "ap-northeast-1" : { "AMI" : "ami-27d6e626" }
+      }
+
       },
+
 
       "Resources" : {
 
@@ -42,48 +55,54 @@
               "GroupDescription" : "Insecure Group All Traffic",
               "VpcId" : { "Ref" : "VPC" },
               "SecurityGroupIngress": [
-                {"IpProtocol": "-1", "FromPort": "0", "ToPort": "65535", "CidrIp": "0.0.0.0/0"}
+              {"IpProtocol": "-1", "FromPort": "0", "ToPort": "65535", "CidrIp": "0.0.0.0/0"}
               ],
               "SecurityGroupEgress": [
-                {"IpProtocol": "-1", "FromPort": "0", "ToPort": "65535", "CidrIp": "0.0.0.0/0"}
+              {"IpProtocol": "-1", "FromPort": "0", "ToPort": "65535", "CidrIp": "0.0.0.0/0"}
               ]
+            }
+            },
+
+            "PublicSubnet" : {
+              "Type" : "AWS::EC2::Subnet",
+              "Properties" : {
+                "VpcId" : { "Ref" : "VPC" },
+                "CidrBlock" : "192.168.1.0/24",
+                "Tags" : [
+                {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+                {"Key" : "Network", "Value" : "Public" }
+                ]
               }
               },
 
-              "PublicSubnet" : {
-                "Type" : "AWS::EC2::Subnet",
+              "NAT" : {
+                "DependsOn" : ["PublicSubnet", "secg"],
+                "Type" : "AWS::EC2::Instance",
                 "Properties" : {
-                  "VpcId" : { "Ref" : "VPC" },
-                  "CidrBlock" : "192.168.1.0/24",
-                  "Tags" : [
-                  {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
-                  {"Key" : "Network", "Value" : "Public" }
-                  ]
-                }
-                },
-
-                "InternetGateway" : {
-                  "Type" : "AWS::EC2::InternetGateway",
-                  "Properties" : {
+                  "InstanceType" : "t2.micro",
+                  "KeyName"  : { "Ref" : "KeyName" },
+                  "SourceDestCheck" : "false",
+                  "ImageId" : { "Fn::FindInMap" : [ "NatRegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+                  "NetworkInterfaces" : [{
+                    "GroupSet"                 : [{ "Ref" : "secg" }],
+                    "AssociatePublicIpAddress" : "true",
+                    "DeviceIndex"              : "0",
+                    "DeleteOnTermination"      : "true",
+                    "SubnetId"                 : { "Ref" : "PublicSubnet" }
+                    }],
                     "Tags" : [
-                    {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
-                    {"Key" : "Network", "Value" : "Public" }
-                    ]
+                    { "Key" : "Name", "Value" : "NAT" }
+                    ],
+                    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash\n",
+                    "yum update -y && yum install -y yum-cron && chkconfig yum-cron on"
+                    ]]}}
                   }
                   },
 
-                  "AttachGateway" : {
-                    "Type" : "AWS::EC2::VPCGatewayAttachment",
+                  "InternetGateway" : {
+                    "Type" : "AWS::EC2::InternetGateway",
                     "Properties" : {
-                     "VpcId" : { "Ref" : "VPC" },
-                     "InternetGatewayId" : { "Ref" : "InternetGateway" }
-                   }
-                   },
-
-                   "PublicRouteTable" : {
-                    "Type" : "AWS::EC2::RouteTable",
-                    "Properties" : {
-                      "VpcId" : {"Ref" : "VPC"},
                       "Tags" : [
                       {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
                       {"Key" : "Network", "Value" : "Public" }
@@ -91,34 +110,53 @@
                     }
                     },
 
-                    "PublicRoute" : {
-                      "Type" : "AWS::EC2::Route",
+                    "AttachGateway" : {
+                      "Type" : "AWS::EC2::VPCGatewayAttachment",
                       "Properties" : {
-                        "RouteTableId" : { "Ref" : "PublicRouteTable" },
-                        "DestinationCidrBlock" : "0.0.0.0/0",
-                        "GatewayId" : { "Ref" : "InternetGateway" }
+                       "VpcId" : { "Ref" : "VPC" },
+                       "InternetGatewayId" : { "Ref" : "InternetGateway" }
+                     }
+                     },
+
+                     "PublicRouteTable" : {
+                      "Type" : "AWS::EC2::RouteTable",
+                      "Properties" : {
+                        "VpcId" : {"Ref" : "VPC"},
+                        "Tags" : [
+                        {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+                        {"Key" : "Network", "Value" : "Public" }
+                        ]
                       }
                       },
 
-                      "PublicSubnetRouteTableAssociation" : {
-                        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+                      "PublicRoute" : {
+                        "Type" : "AWS::EC2::Route",
                         "Properties" : {
-                          "SubnetId" : { "Ref" : "PublicSubnet" },
-                          "RouteTableId" : { "Ref" : "PublicRouteTable" }
+                          "RouteTableId" : { "Ref" : "PublicRouteTable" },
+                          "DestinationCidrBlock" : "0.0.0.0/0",
+                          "GatewayId" : { "Ref" : "InternetGateway" }
                         }
-                      }
-                      },
+                        },
 
-                      "Outputs" : {
-
-                        "VpcID" : {
-                          "Value" : {"Ref" : "VPC"},
-                          "Description" : "VPC ID of newly created VPC"
-                          },
-
-                          "PublicSubnetID" :  {
-                            "Value" : {"Ref" : "PublicSubnet"},
-                            "Description" : "Public subnet ID"
+                        "PublicSubnetRouteTableAssociation" : {
+                          "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+                          "Properties" : {
+                            "SubnetId" : { "Ref" : "PublicSubnet" },
+                            "RouteTableId" : { "Ref" : "PublicRouteTable" }
                           }
                         }
-                      }
+                        },
+
+                        "Outputs" : {
+
+                          "VpcID" : {
+                            "Value" : {"Ref" : "VPC"},
+                            "Description" : "VPC ID of newly created VPC"
+                            },
+
+                            "PublicSubnetID" :  {
+                              "Value" : {"Ref" : "PublicSubnet"},
+                              "Description" : "Public subnet ID"
+                            }
+                          }
+                        }
