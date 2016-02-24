@@ -32,7 +32,7 @@ networks:
   - range: 192.168.1.0/24
     gateway: 192.168.1.1
     dns: [8.8.8.8]
-    cloud_properties: {subnet: subnet-3e96105b} # <--- Replace with Subnet ID
+    cloud_properties: {subnet: subnet-b5296dd0} # <--- Replace with example Subnet ID
 - name: public
   type: vip
 
@@ -58,7 +58,7 @@ jobs:
     static_ips: [192.168.1.6]
     default: [dns, gateway]
   - name: public
-    static_ips: [52.8.50.119] # <--- Replace with Elastic IP
+    static_ips: [52.8.71.6] # <--- Replace with public Elastic IP address, from "aws ec2 allocate-address"
 
   properties:
     nats:
@@ -106,10 +106,17 @@ jobs:
       resurrector_enabled: true
 
     aws: &aws
+<<<<<<< HEAD
       access_key_id: BLAHI6MBLAHV7HSBLAH # <--- Replace with AWS Access Key ID
       secret_access_key: BLAHRGt2ZBLAHzphlMjteGBLAHBLAHrGiCGiD1 # <--- Replace with AWS Secret Key
       default_key_name: ExampleKeyPair
       default_security_groups: [secg]
+=======
+      access_key_id: AKIAIJNKIKQT6QFG7ZWA # <--- Replace with AWS Access Key ID in ~/.aws/credentials
+      secret_access_key: 3PHwosFIMsYlo7FrJhZsXs/QrztOH3z39kirQkBQ # <--- Replace with AWS Secret Access Key in ~/.aws/credentials
+      default_key_name: ExampleKeyPair # <--- Replace if needed with Key Pair name
+      default_security_groups: [ExampleStack-secg-1GM4KMLNRBUWD] # <--- Replace with example Security Group Name
+>>>>>>> master
       region: us-west-1
 
     agent: {mbus: "nats://nats:nats-password@192.168.1.6:4222"}
@@ -120,12 +127,16 @@ cloud_provider:
   template: {name: aws_cpi, release: bosh-aws-cpi}
 
   ssh_tunnel:
-    host: 52.8.50.119 # <--- Replace with your Elastic IP address
+    host: 52.8.71.6 # <--- Replace with Elastic IP address, same as above
     port: 22
     user: vcap
+<<<<<<< HEAD
     private_key: ./ExampleKeyPair.pem # Path relative to this manifest file
+=======
+    private_key: ./ExampleKeyPair.pem # <--- Path to key must be relative to this manifest file
+>>>>>>> master
 
-  mbus: "https://mbus:mbus-password@52.8.50.119:6868" # <--- Replace with Elastic IP
+  mbus: "https://mbus:mbus-password@52.8.71.6:6868" # <--- Replace with Elastic IP address, retaining “:6868” port number
 
   properties:
     aws: *aws

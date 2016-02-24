@@ -1,22 +1,22 @@
 ---
 name: example-product-906ec4aecbec172c9706
-director_uuid: 729452b0-2c1f-4763-a6ec-cf43e7f0ba89 # <----- Replace this with your MicroBOSH UUID
+director_uuid: ea1b4d3e-bc26-4e83-b7a0-dd3b08cb7089 # <----- Replace with BOSH director UUID from "bosh status --uuid"
 releases:
 - name: example-release
   version: '7+dev.2'
 networks:
 - name: default
   subnets:
-  - range: 10.0.16.0/20
-    gateway: 10.0.16.1
+  - range: 192.168.1.0/24
+    gateway: 192.168.1.1
     dns:
-    - 10.0.0.2
+    - 192.168.1.2
     static:
-    - 10.0.16.5
+    - 192.168.1.7
     reserved:
-    - 10.0.16.2-10.0.16.4
+    - 192.168.1.2 - 192.168.1.6
     cloud_properties:
-      subnet: subnet-3996105c  # <----- Replace this with your /20 subnet
+      subnet: subnet-b5296dd0  # <----- Replace with example Subnet ID
 resource_pools:
 - name: vms
   stemcell:
@@ -25,7 +25,7 @@ resource_pools:
   network: default
   cloud_properties:
     instance_type: t2.micro
-    availability_zone: us-west-1a # <----- replace this with your availability zone
+    availability_zone: us-west-1a # <----- Replace with Availability Zone
     ephemeral_disk:
       size: 2048
       type: gp2
@@ -35,7 +35,7 @@ compilation:
   network: default
   cloud_properties:
     instance_type: t2.micro
-    availability_zone: us-west-1a  # <----- Replace this with your availability zone
+    availability_zone: us-west-1a  # <----- Replace with Availability zone
     ephemeral_disk:
       size: 2048
       type: gp2
@@ -62,7 +62,7 @@ jobs:
     - dns
     - gateway
     static_ips:
-    - 10.0.16.5
+    - 192.168.1.7
   properties:
     max_in_flight: 1
   persistent_disk_pool: disk
